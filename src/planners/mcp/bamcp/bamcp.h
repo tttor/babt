@@ -24,7 +24,6 @@ class SamplerFactory;
 class BAMCP
 {
 public:
-
     struct PARAMS
     {
         PARAMS();
@@ -36,9 +35,8 @@ public:
         int ExpandCount;
         double ExplorationConstant;
         bool ReuseTree;
-				bool BANDIT;
-				int RB;
-				double eps;
+        int RB;
+        double eps;
     };
 
     BAMCP(const SIMULATOR& simulator, const PARAMS& params,SamplerFactory& sampFact);
@@ -62,10 +60,10 @@ public:
     static void InitFastUCB(double exploration);
 
 private:
-		uint* counts;
-		double* countsSum;
-		//Cached values
-		uint S,A,SA,SAS;
+    uint* counts;
+    double* countsSum;
+    //Cached values
+    uint S,A,SA,SAS;
 
     PARAMS Params;
     const SIMULATOR& Simulator;
@@ -73,15 +71,15 @@ private:
     HISTORY History;
     SIMULATOR::STATUS Status;
     int TreeDepth, PeakTreeDepth;
-		
-		SamplerFactory& SampFact;
+        
+    SamplerFactory& SampFact;
 
-		uint* RLPI;
-		double* V;
-		
-		double* Q;
+    uint* RLPI;
+    double* V;
+    
+    double* Q;
     double QlearningRate;
-		std::vector<uint>** GreedyA;
+    std::vector<uint>** GreedyA;
 
     STATISTIC StatTreeDepth;
     STATISTIC StatRolloutDepth;
@@ -96,16 +94,10 @@ private:
 
     // Fast lookup table for UCB
     //static const int UCB_N = 10000, UCB_n = 100;
-		static const int UCB_N = 10000, UCB_n = 5000;
+    static const int UCB_N = 10000, UCB_n = 5000;
     static double UCB[UCB_N][UCB_n];
     static bool InitialisedFastUCB;
 
     double FastUCB(int N, int n, double logN) const;
-
-		uint step;
-
-		std::ofstream meand;
-		std::ofstream maxd;
-
 };
 
