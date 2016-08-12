@@ -18,7 +18,8 @@
 using namespace std;
 using namespace UTILS;
 
-//-----------------------------------------------------------------------------
+double BAMCP::UCB[UCB_N][UCB_n];
+bool BAMCP::InitialisedFastUCB = true;
 
 BAMCP::PARAMS::PARAMS()
 :   Verbose(0),
@@ -27,102 +28,82 @@ BAMCP::PARAMS::PARAMS()
     NumStartStates(1000),
     ExpandCount(1),
     ExplorationConstant(1),
-		ReuseTree(false),
-		BANDIT(false),   //Deal with bandits a bit differently in the code
-		RB(-1),
-		eps(1)
+    ReuseTree(false),
+    RB(-1),
+    eps(1)
 {
 }
 
 BAMCP::BAMCP(const SIMULATOR& simulator, const PARAMS& params,
-		SamplerFactory& sampFact)
+        SamplerFactory& sampFact)
 :   Params(params),
-		Simulator(simulator),
+        Simulator(simulator),
     TreeDepth(0),
-		SampFact(sampFact)
+        SampFact(sampFact)
 {
     VNODE::NumChildren = Simulator.GetNumActions();
     QNODE::NumChildren = Simulator.GetNumObservations();
 
     Root = ExpandNode();
 
-		A = Simulator.GetNumActions();
-		S = Simulator.GetNumObservations();
-		SA = S*A;
-		SAS = S*A*S;
-		
-		RLPI = new uint[S];
-		V = new double[S];
-	
-		Q = new double[SA];
-		std::fill(Q,Q+SA,0);
-		GreedyA = new std::vector<uint>*[S];
-		std::vector<uint>	 tmp(A);
-		for(uint a = 0;a<A;++a){
-			tmp[a] = a;
-		}
-		for(uint s = 0;s<S;++s){
-			GreedyA[s] = new std::vector<uint>(tmp);
-		}
-    QlearningRate = 0.2;
-		
-		//Initialize transition counts for posterior estimation
-		if(!Params.BANDIT){
-			counts = new uint[SAS];
-			for(uint c=0;c<SAS;++c){
-				counts[c] = 0;
-			}
-		}
-		else{
-			assert(S == 2);
-			counts = new uint[SA];
-			for(uint c=0;c<SA;++c){
-				counts[c] = 0;
-			}
-		}
-		
-		countsSum = new double[SA];
-		std::fill(countsSum,countsSum+SA,SampFact.getAlphaMean()*S);
-	
-		step = 0;
-  
+    A = Simulator.GetNumActions();
+    S = Simulator.GetNumObservations();
+    SA = S*A;
+    SAS = S*A*S;
+    
+    RLPI = new uint[S];
+    V = new double[S];
 
-//		meand.open("BMCP_meandepth",std::ios_base::app);	
-//		maxd.open("BMCP_maxdepth",std::ios_base::app);
+    Q = new double[SA];
+    std::fill(Q,Q+SA,0);
+    GreedyA = new std::vector<uint>*[S];
+    std::vector<uint>    tmp(A);
+    for(uint a = 0;a<A;++a){
+        tmp[a] = a;
+    }
+    for(uint s = 0;s<S;++s){
+        GreedyA[s] = new std::vector<uint>(tmp);
+    }
+    QlearningRate = 0.2;
+        
+    //Initialize transition counts for posterior estimation
+    counts = new uint[SAS];
+    for(uint c=0;c<SAS;++c){
+        counts[c] = 0;
+    }
+
+    countsSum = new double[SA];
+    std::fill(countsSum,countsSum+SA,SampFact.getAlphaMean()*S);
 }
 
 BAMCP::~BAMCP()
 {
-	delete[] counts;
-	delete[] countsSum;	
+    delete[] counts;
+    delete[] countsSum; 
  
-	delete[] RLPI;
-	delete[] V;
-	
-	delete[] Q;
-	for(uint s=0;s<S;++s)
-		delete GreedyA[s];
-	delete[] GreedyA;
+    delete[] RLPI;
+    delete[] V;
+    
+    delete[] Q;
+    for(uint s=0;s<S;++s)
+        delete GreedyA[s];
+    delete[] GreedyA;
 
-	VNODE::Free(Root, Simulator);
-  VNODE::FreeAll();
+    VNODE::Free(Root, Simulator);
+    VNODE::FreeAll();
 }
 
 bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
 {
     History.Add(aa, observation);
-	
-		//Update posterior
-		if(!Params.BANDIT){
-			counts[ss*SA+S*aa+observation] += 1;
-			SampFact.updateCounts(ss,aa,observation);	
-			countsSum[ss*A+aa] += 1;
-		}
-		else
-			counts[aa*S+observation] += 1;
+    
+    //Update posterior
+    counts[ss*SA+S*aa+observation] += 1;
+    SampFact.updateCounts(ss,aa,observation);   
+    countsSum[ss*A+aa] += 1;
 
     //Q value update
-		Q[ss*A+aa] += QlearningRate*(reward + Simulator.GetDiscount()*Q[observation*A+GreedyA[observation]->at(0)] - Q[ss*A+aa]);
+    Q[ss*A+aa] += QlearningRate*(reward + Simulator.GetDiscount()*Q[observation*A+GreedyA[observation]->at(0)] - Q[ss*A+aa]);
     //Update GreedyA
     double maxQ = -Infinity;
     GreedyA[ss]->clear();
@@ -134,8 +115,8 @@ bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
         maxQ = Q[ss*A+a2];
         GreedyA[ss]->push_back(a2);
       }
-    }	
-		
+    }   
+        
     //Reuse previous subtree for next search 
     //Get to subtree
     QNODE& qnode = Root->Child(aa);
@@ -151,7 +132,7 @@ bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
       VNODE::Free(Root,Simulator);
       VNODE* newRoot = ExpandNode();
       Root = newRoot;
-    }	
+    }   
 
     return true;
 }
@@ -159,47 +140,27 @@ bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
 int BAMCP::SelectAction(uint current_state)
 {
   UCTSearch(current_state);
-  step++;
   return GreedyUCB(Root,false);;
 }
 
 void BAMCP::UCTSearch(uint state)
-{
-		
+{       
     ClearStatistics();
     int historyDepth = History.Size();
-		double* parm = 0;
-		double* p_samp = 0;
-		Sampler* MDPSampler = 0;
-		if(Params.BANDIT){
-			parm = new double[2];
-			p_samp = new double[Simulator.GetNumActions()];
-		}
-		else{
-			MDPSampler = SampFact.getMDPSampler(counts,S,A,
-					Simulator.R,Simulator.rsas,Simulator.GetDiscount());
-		}
+    double* parm = 0;
+    double* p_samp = 0;
+    Sampler* MDPSampler = 0;
     
-			
+    MDPSampler = SampFact.getMDPSampler(counts,S,A,
+                                        Simulator.R,Simulator.rsas,Simulator.GetDiscount());
+                
     for (int n = 0; n < Params.NumSimulations; n++)
     {
-				SIMULATOR* mdp;
-				if(!Params.BANDIT){
-					// Sample MDP given counts	
-					mdp = MDPSampler->updateMDPSample();
-					
-				}else if(Params.BANDIT){  //TODO Move this to a special BANDIT sampler?
-					state = 0; //Ignore state itself
-					//sample Bandit
-					for(int a=0;a<Simulator.GetNumActions();++a){
-						utils::sampleDirichlet(parm,counts+a*2,2,1);
-						p_samp[a] = parm[0];
-					}
-					mdp = new BANDIT(Simulator.GetNumActions(),p_samp,Simulator.GetDiscount());	
-				}
+        // Sample MDP given counts  
+        SIMULATOR* mdp;
+        mdp = MDPSampler->updateMDPSample();
 
-				Status.Phase = SIMULATOR::STATUS::TREE;
-
+        Status.Phase = SIMULATOR::STATUS::TREE;
         if (Params.Verbose >= 2)
         {
             cout << "Starting simulation" << endl;
@@ -208,7 +169,7 @@ void BAMCP::UCTSearch(uint state)
         TreeDepth = 0;
         PeakTreeDepth = 0;
         
-				double totalReward = SimulateV(mdp, state, Root);
+        double totalReward = SimulateV(mdp, state, Root);
         StatTotalReward.Add(totalReward);
         StatTreeDepth.Add(PeakTreeDepth);
 
@@ -218,17 +179,9 @@ void BAMCP::UCTSearch(uint state)
             DisplayValue(4, cout);
 
         History.Truncate(historyDepth);
+    }
 
-				if(Params.BANDIT)
-					delete mdp;
-
-		}
-		if(!Params.BANDIT)
-			delete MDPSampler;
-		else if(Params.BANDIT){	
-			delete[] parm;
-			delete[] p_samp;
-		}
+    delete MDPSampler;
     DisplayStatistics(cout);
 }
 
@@ -254,7 +207,7 @@ double BAMCP::SimulateQ(const SIMULATOR* mdp, uint state, QNODE& qnode, uint act
     bool terminal = mdp->Step(state, action, observation, immediateReward);
     //assert(observation >= 0 && observation < mdp.GetNumObservations());
     History.Add(action, observation);
-		
+        
     if (Params.Verbose >= 3)
     {
         mdp->DisplayAction(action, cout);
@@ -263,7 +216,7 @@ double BAMCP::SimulateQ(const SIMULATOR* mdp, uint state, QNODE& qnode, uint act
         mdp->DisplayState(state, cout);
     }
     
-		VNODE*& vnode = qnode.Child(observation);
+    VNODE*& vnode = qnode.Child(observation);
     if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
         vnode = ExpandNode(); //&state);
 
@@ -272,31 +225,24 @@ double BAMCP::SimulateQ(const SIMULATOR* mdp, uint state, QNODE& qnode, uint act
         TreeDepth++;
         if (vnode)
             delayedReward = SimulateV(mdp, observation, vnode);
-        else{
-						if(Params.BANDIT){
-							double bestP = ((BANDIT*)mdp)->getBestArmP();
-							delayedReward = bestP/(1-mdp->GetDiscount()); //Rollout(mdp, state);
-						}
-						else{
-							if(Params.RB < 0){
-								delayedReward = Rollout(mdp, observation);
-							}else{
-								//Warning this will fail with lazy sampling factories
-								assert(mdp->T != 0);
-								MDPutils::valueIterationRmax(S,
-										A,
-										Simulator.rsas,
-										mdp->T,
-										Simulator.R,
-										Simulator.GetDiscount(),
-										0.0001,
-										RLPI,
-										V,counts,Params.RB);
-								delayedReward = V[observation];
-							}	
-						}
-						
-				}
+        else {
+            if(Params.RB < 0){
+                delayedReward = Rollout(mdp, observation);
+            }else{
+                //Warning this will fail with lazy sampling factories
+                assert(mdp->T != 0);
+                MDPutils::valueIterationRmax (  S,
+                                                A,
+                                                Simulator.rsas,
+                                                mdp->T,
+                                                Simulator.R,
+                                                Simulator.GetDiscount(),
+                                                0.0001,
+                                                RLPI,
+                                                V,counts,Params.RB);
+                delayedReward = V[observation];
+            }   
+        }
         TreeDepth--;
     }
 
@@ -309,8 +255,7 @@ VNODE* BAMCP::ExpandNode()
 {
     VNODE* vnode = VNODE::Create();
     vnode->Value.Set(0, 0);
-		vnode->SetChildren(0,0);
-
+    vnode->SetChildren(0,0);
 
     if (Params.Verbose >= 2)
     {
@@ -321,7 +266,6 @@ VNODE* BAMCP::ExpandNode()
 
     return vnode;
 }
-
 
 int BAMCP::GreedyUCB(VNODE* vnode, bool ucb) const
 {
@@ -340,9 +284,9 @@ int BAMCP::GreedyUCB(VNODE* vnode, bool ucb) const
         q = qnode.Value.GetValue();
         n = qnode.Value.GetCount();
 
-				if (ucb)
+                if (ucb)
             q += FastUCB(N, n, logN);
-				
+                
         if (q >= bestq)
         {
             if (q > bestq)
@@ -361,22 +305,22 @@ double BAMCP::Rollout(const SIMULATOR* mdp, uint state)
     Status.Phase = SIMULATOR::STATUS::ROLLOUT;
     if (Params.Verbose >= 3)
         cout << "Starting rollout" << endl;
-		
+        
     double totalReward = 0.0;
     double discount = 1.0;
     bool terminal = false;
     int numSteps;
-		int action;
+        int action;
     for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps)
     {
         uint observation;
         double reward;
-				if(utils::rng.rand_closed01() < Params.eps)
-					action = mdp->SelectRandom(state, Status);
-				else{
+                if(utils::rng.rand_closed01() < Params.eps)
+                    action = mdp->SelectRandom(state, Status);
+                else{
 
-					action = GreedyA[state]->at(rand() % GreedyA[state]->size());
-				}
+                    action = GreedyA[state]->at(rand() % GreedyA[state]->size());
+                }
         terminal = mdp->Step(state, action, observation, reward);
         History.Add(action, observation);
 
@@ -387,8 +331,8 @@ double BAMCP::Rollout(const SIMULATOR* mdp, uint state)
             mdp->DisplayReward(reward, cout);
             mdp->DisplayState(state, cout);
         }
-				
-				state = observation;
+                
+                state = observation;
         totalReward += reward * discount;
         discount *= mdp->GetDiscount();
     }
@@ -400,13 +344,10 @@ double BAMCP::Rollout(const SIMULATOR* mdp, uint state)
     return totalReward;
 }
 
-double BAMCP::UCB[UCB_N][UCB_n];
-bool BAMCP::InitialisedFastUCB = true;
-
 void BAMCP::InitFastUCB(double exploration)
 {
     cout << "Initialising fast UCB table with exp. const. " 
-			<< exploration << "...  ";
+            << exploration << "...  ";
     for (int N = 0; N < UCB_N; ++N)
         for (int n = 0; n < UCB_n; ++n)
             if (n == 0)
@@ -467,7 +408,3 @@ void BAMCP::DisplayPolicy(int depth, ostream& ostr) const
     ostr << "BAMCP Policy:" << endl;
     Root->DisplayPolicy(history, depth, ostr);
 }
-
-//-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------

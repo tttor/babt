@@ -93,9 +93,9 @@ int main(int argc, char* argv[]) {
 	}
 	timer.stopTimer();
 
-	std::string filename_bmcp(datafilename);
-	filename_bmcp.append("_bmcp");
-	utils::dumpc(Rhist,filename_bmcp,nSteps);
+	// std::string filename_bmcp(datafilename);
+	// filename_bmcp.append("_bmcp");
+	// utils::dumpc(Rhist,filename_bmcp,nSteps);
 
 	std::cout << "Time: " << timer.getElapsedTime()/(double)nTrials  << " s" << endl;
 	utils::append(timer.getElapsedTime()/(double)nTrials,filename_bmcp_all);
