@@ -57,11 +57,11 @@ public:
     double GetRewardRange() const { return RewardRange; }
     double GetHorizon(double accuracy, int undiscountedHorizon = 100) const;
 
-		double* T;
-		double* R;
-		
-		//Reward R(s,a,s') ? (otherwise reward function is R(s,a))
-		bool rsas;
+    double* T;
+    double* R;
+    
+    //Reward R(s,a,s') ? (otherwise reward function is R(s,a))
+    bool rsas;
 
 protected:
 

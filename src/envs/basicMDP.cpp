@@ -153,7 +153,7 @@ void BasicMDP::Validate(const uint state) const{
 }
 
 bool BasicMDP::Step(uint state, uint action, 
-    uint& observation, double& reward) const
+    				uint& observation, double& reward) const
 {
 	utils::rng.multinom(T+state*SA+action*S,S,observation);
 	if(rsas)	

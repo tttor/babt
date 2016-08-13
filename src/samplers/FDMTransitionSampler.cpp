@@ -3,14 +3,11 @@
 
 //FDMTransitionSampler functions
 //-----------------------------------------------------
-
-
 FDMTransitionSampler::FDMTransitionSampler(double* _P, uint _S) : P(_P), S(_S){
 
 }
 
-FDMTransitionSampler::~FDMTransitionSampler()
-{
+FDMTransitionSampler::~FDMTransitionSampler(){
     delete[] P;
 }
 uint FDMTransitionSampler::getNextStateSample(){
@@ -21,11 +18,9 @@ uint FDMTransitionSampler::getNextStateSample(){
 
 //FDMTransitionParamSampler functions
 //-----------------------------------------------------
-
-
 FDMTransitionParamSampler::FDMTransitionParamSampler(const uint* _counts,
-        double _alpha, uint _S) :
-    counts(_counts),alpha(_alpha), S(_S){
+                                                     double _alpha, uint _S) 
+    : counts(_counts),alpha(_alpha), S(_S){
         
 }
 
@@ -39,15 +34,14 @@ void FDMTransitionParamSampler::getNextTParamSample(double* P){
 
 //FDMMDPSampler functions
 //-----------------------------------------------------
-
 FDMMDPSampler::FDMMDPSampler(const uint* _counts, double _alpha,
-                uint _S, uint _A, double* _R, bool _rsas, double _gamma):
-counts(_counts),alpha(_alpha), S(_S), A(_A), R(_R), rsas(_rsas),gamma(_gamma){
+                             uint _S, uint _A, double* _R, bool _rsas, double _gamma)
+        : counts(_counts),alpha(_alpha), S(_S), A(_A), R(_R), rsas(_rsas),gamma(_gamma){
     SA = S*A;       
     T = new double[SA*S];
     simulator = 0;
-
 }
+
 FDMMDPSampler::~FDMMDPSampler(){
     delete[] T; 
     if(simulator)

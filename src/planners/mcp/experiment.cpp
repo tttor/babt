@@ -14,9 +14,8 @@ EXPERIMENT::PARAMS::PARAMS()
 {
 }
 
-EXPERIMENT::EXPERIMENT(const SIMULATOR& real,
-    const SIMULATOR& simulator, const string& outputFile,
-    EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, SamplerFactory& _samplerFact)
+EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const string& outputFile,
+                       EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, SamplerFactory& _samplerFact)
 :   Real(real),
     Simulator(simulator),
     ExpParams(expParams),
@@ -49,7 +48,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
 
     for (size_t t = 0; t < ExpParams.NumSteps; t++)
     {
-        uint action = mcts.SelectAction(state);// contains the planning, i.e UCTSearch()
+        uint action = mcts.SelectAction(state);// contains UCTSearch() planning
 
         uint observation;
         double reward;
@@ -92,5 +91,5 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
     cout << "(" << discountedReturn << "," 
          << Results.DiscountedReturn.GetMean() << ":"
          << undiscountedReturn << "," << Results.UndiscountedReturn.GetMean()
-         << ") " << flush;
+         << ") " << flush << endl;
 }

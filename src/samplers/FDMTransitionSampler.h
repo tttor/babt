@@ -4,56 +4,45 @@
 #include "utils/utils.h"
 
 class FDMTransitionSampler : public Sampler{
-	public:
+    public:
+    FDMTransitionSampler(double* _P, uint _S);
+    ~FDMTransitionSampler();
 
-	FDMTransitionSampler(double* _P, uint _S);
-	~FDMTransitionSampler();
+    uint getNextStateSample();
 
-	uint getNextStateSample();
-
-	protected:
-	 double* P;
-	 uint S;
-
+    protected:
+    double* P;
+    uint S;
 };
-
-//-----------------------------------------------------
-
 
 class FDMTransitionParamSampler : public Sampler{
-	public:
+public:
+    FDMTransitionParamSampler(const uint* _counts, double _alpha, uint _S);
+    ~FDMTransitionParamSampler();
 
-	FDMTransitionParamSampler(const uint* _counts, double _alpha, uint _S);
-	~FDMTransitionParamSampler();
+    void getNextTParamSample(double* P);
 
-	void getNextTParamSample(double* P);
-
-	protected:
-
-	 const uint* counts;
-	 double alpha;
-	 uint S;
-
+protected:
+    const uint* counts;
+    double alpha;
+    uint S;
 };
 
-
-//-----------------------------------------------------
-
 class FDMMDPSampler : public Sampler{
-	public:
-		FDMMDPSampler(const uint* counts, double alpha,
-				uint S, uint A, double* R, bool rsas, double gamma); 
-		~FDMMDPSampler();
+    public:
+        FDMMDPSampler(const uint* counts, double alpha,
+                uint S, uint A, double* R, bool rsas, double gamma); 
+        ~FDMMDPSampler();
 
-		SIMULATOR* updateMDPSample();
-	protected:
-
-		const uint* counts;
-		double alpha;
-		uint S,A,SA;
-		double* R;
-		bool rsas;
-		double gamma;
-		double* T;
-		SIMULATOR* simulator;
+        SIMULATOR* updateMDPSample();
+        
+    protected:
+        const uint* counts;
+        double alpha;
+        uint S,A,SA;
+        double* R;
+        bool rsas;
+        double gamma;
+        double* T;
+        SIMULATOR* simulator;
 };

@@ -10,7 +10,6 @@ PROJECT(brl)
 SET(brl_src
 	src/envs/simulator.cpp
 	src/envs/grid.cpp
-	src/envs/banditSim.cpp
 	src/envs/basicMDP.cpp
 	src/utils/rng.cpp
 	src/utils/utils.cpp

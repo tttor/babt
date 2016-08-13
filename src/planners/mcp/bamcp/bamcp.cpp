@@ -2,18 +2,12 @@
 #include <math.h>
 #include "utils/utils.h"
 #include <algorithm>
-
 #include <iomanip>
 
 #include "node.h"
-
 #include "samplers/sampler.h"
 #include "samplers/samplerFactory.h"
-
-#include "envs/banditSim.h"
 #include "planners/MDPutils.h"
-
-#include "envs/basicMDP.h"
 
 using namespace std;
 using namespace UTILS;
@@ -35,11 +29,9 @@ BAMCP::PARAMS::PARAMS()
 }
 
 BAMCP::BAMCP(const SIMULATOR& simulator, const PARAMS& params,
-        SamplerFactory& sampFact)
-:   Params(params),
-        Simulator(simulator),
-    TreeDepth(0),
-        SampFact(sampFact)
+             SamplerFactory& sampFact)
+:   Params(params), Simulator(simulator),
+    TreeDepth(0), SampFact(sampFact)
 {
     VNODE::NumChildren = Simulator.GetNumActions();
     QNODE::NumChildren = Simulator.GetNumObservations();
@@ -98,12 +90,12 @@ bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
     History.Add(aa, observation);
     
     //Update posterior
-    counts[ss*SA+S*aa+observation] += 1;
-    SampFact.updateCounts(ss,aa,observation);   
+    counts[(SA*ss)+(S*aa)+observation] += 1;
     countsSum[ss*A+aa] += 1;
 
     //Q value update
     Q[ss*A+aa] += QlearningRate*(reward + Simulator.GetDiscount()*Q[observation*A+GreedyA[observation]->at(0)] - Q[ss*A+aa]);
+
     //Update GreedyA
     double maxQ = -Infinity;
     GreedyA[ss]->clear();
