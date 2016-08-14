@@ -44,9 +44,23 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
 
     uint S = Real.GetNumObservations();
     uint A = Real.GetNumActions();
-    uint* prevCounts = new uint[S*A*S];
-    uint* currCounts = new uint[S*A*S];
-    double* posteriorDists = new double[ExpParams.NumSteps];
+
+    utils::Counts counts(S);// transition counts, size=SAS
+    utils::Posteriors currPosteriors(S);// posterior of transition prob.
+    utils::Posteriors prevPosteriors(S);// posterior of transition prob.
+    for (uint i=0; i<S; ++i) {
+        counts.at(i).resize(A);
+        currPosteriors.at(i).resize(A);
+        prevPosteriors.at(i).resize(A);
+        for (uint j=0; j<A; ++j) {
+            counts.at(i).at(j).resize(S);
+            currPosteriors.at(i).at(j).resize(S);
+            prevPosteriors.at(i).at(j).resize(S);
+        }
+    }
+    
+    std::vector< std::vector<double> > posteriorDistances(ExpParams.NumSteps);
+    for(uint i=0; i<ExpParams.NumSteps; ++i) posteriorDistances.at(i).resize(S);
 
     uint state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
@@ -84,13 +98,13 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
         mcts.Update(state, action, observation, reward);
         state = observation;//For MDP:
 
-        if (t > 0) {
-            mcts.GetCounts(currCounts);
-
-            double dist = 0;//util3::btcry(currCounts,prevCounts);
-            posteriorDists[t] = dist;
+        mcts.GetCounts(&counts);
+        utils::convertCountsToPosteriors(counts,&currPosteriors);
+        if (t>0) {
+            utils::getPosteriorDistances(currPosteriors,prevPosteriors,
+                                         &(posteriorDistances.at(t)));
         }
-        mcts.GetCounts(prevCounts);
+        prevPosteriors = currPosteriors;
 
         if (timer.elapsed() > ExpParams.TimeOut)
         {
@@ -107,7 +121,4 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
          << Results.DiscountedReturn.GetMean() << ":"
          << undiscountedReturn << "," << Results.UndiscountedReturn.GetMean()
          << ") " << flush << endl;
-
-    delete[] currCounts;
-    delete[] prevCounts;
 }

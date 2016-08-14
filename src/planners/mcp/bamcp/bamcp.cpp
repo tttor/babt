@@ -1,6 +1,5 @@
 #include "bamcp.h"
 #include <math.h>
-#include "utils/utils.h"
 #include <algorithm>
 #include <iomanip>
 
@@ -395,8 +394,13 @@ void BAMCP::DisplayPolicy(int depth, ostream& ostr) const
     Root->DisplayPolicy(history, depth, ostr);
 }
 
-void BAMCP::GetCounts(uint* tCounts) {
-    for (uint i=0; i<SAS; ++i) {
-        *(tCounts+i) = counts[i];
+void BAMCP::GetCounts(utils::Counts* pCounts) {
+    for (uint s=0; s<S; ++s) {
+        for (uint a=0; a<A; ++a) {
+            for (uint ss=0; ss<S; ++ss) {
+                uint c = counts[(SA*s)+(S*a)+ss];
+                pCounts->at(s).at(a).at(ss) = c;
+            }
+        }
     }
 }

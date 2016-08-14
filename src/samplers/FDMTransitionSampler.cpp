@@ -1,37 +1,6 @@
 #include "FDMTransitionSampler.h"
 #include "envs/basicMDP.h"
 
-//FDMTransitionSampler functions
-//-----------------------------------------------------
-FDMTransitionSampler::FDMTransitionSampler(double* _P, uint _S) : P(_P), S(_S){
-
-}
-
-FDMTransitionSampler::~FDMTransitionSampler(){
-    delete[] P;
-}
-uint FDMTransitionSampler::getNextStateSample(){
-    uint sp;
-    utils::rng.multinom(P,S,sp);
-    return sp;  
-}
-
-//FDMTransitionParamSampler functions
-//-----------------------------------------------------
-FDMTransitionParamSampler::FDMTransitionParamSampler(const uint* _counts,
-                                                     double _alpha, uint _S) 
-    : counts(_counts),alpha(_alpha), S(_S){
-        
-}
-
-FDMTransitionParamSampler::~FDMTransitionParamSampler()
-{
-}
-
-void FDMTransitionParamSampler::getNextTParamSample(double* P){
-    utils::sampleDirichlet(P,counts,S,alpha);
-}
-
 //FDMMDPSampler functions
 //-----------------------------------------------------
 FDMMDPSampler::FDMMDPSampler(const uint* _counts, double _alpha,
@@ -64,3 +33,34 @@ SIMULATOR* FDMMDPSampler::updateMDPSample(){
     simulator = new BasicMDP(S,A,gamma,R,rsas,T);
     return (SIMULATOR*) simulator;  
 }
+
+// //FDMTransitionSampler functions
+// //-----------------------------------------------------
+// FDMTransitionSampler::FDMTransitionSampler(double* _P, uint _S) : P(_P), S(_S){
+
+// }
+
+// FDMTransitionSampler::~FDMTransitionSampler(){
+//     delete[] P;
+// }
+// uint FDMTransitionSampler::getNextStateSample(){
+//     uint sp;
+//     utils::rng.multinom(P,S,sp);
+//     return sp;  
+// }
+
+// //FDMTransitionParamSampler functions
+// //-----------------------------------------------------
+// FDMTransitionParamSampler::FDMTransitionParamSampler(const uint* _counts,
+//                                                      double _alpha, uint _S) 
+//     : counts(_counts),alpha(_alpha), S(_S){
+        
+// }
+
+// FDMTransitionParamSampler::~FDMTransitionParamSampler()
+// {
+// }
+
+// void FDMTransitionParamSampler::getNextTParamSample(double* P){
+//     utils::sampleDirichlet(P,counts,S,alpha);
+// }
