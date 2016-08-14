@@ -15,7 +15,8 @@ EXPERIMENT::PARAMS::PARAMS()
 }
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const string& outputFile,
-                       EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, SamplerFactory& _samplerFact)
+                       EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, 
+                       SamplerFactory& _samplerFact)
 :   Real(real),
     Simulator(simulator),
     ExpParams(expParams),
@@ -30,7 +31,6 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const 
 
     BAMCP::InitFastUCB(SearchParams.ExplorationConstant);
 }
-
 
 void EXPERIMENT::Run(std::vector<double>& Rhist)
 {

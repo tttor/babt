@@ -59,7 +59,6 @@ public:
 
 private:
     uint* counts;
-    double* countsSum;
     uint S,A,SA,SAS;
 
     PARAMS Params;

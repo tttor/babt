@@ -42,37 +42,32 @@ BAMCP::BAMCP(const SIMULATOR& simulator, const PARAMS& params,
     S = Simulator.GetNumObservations();
     SA = S*A;
     SAS = S*A*S;
-    
+    QlearningRate = 0.2;
+
     RLPI = new uint[S];
     V = new double[S];
-
     Q = new double[SA];
     std::fill(Q,Q+SA,0);
+
     GreedyA = new std::vector<uint>*[S];
-    std::vector<uint>    tmp(A);
+    std::vector<uint> tmp(A);
     for(uint a = 0;a<A;++a){
         tmp[a] = a;
     }
     for(uint s = 0;s<S;++s){
         GreedyA[s] = new std::vector<uint>(tmp);
     }
-    QlearningRate = 0.2;
         
     //Initialize transition counts for posterior estimation
     counts = new uint[SAS];
     for(uint c=0;c<SAS;++c){
         counts[c] = 0;
     }
-
-    countsSum = new double[SA];
-    std::fill(countsSum,countsSum+SA,SampFact.getAlphaMean()*S);
 }
 
 BAMCP::~BAMCP()
 {
     delete[] counts;
-    delete[] countsSum; 
- 
     delete[] RLPI;
     delete[] V;
     
@@ -91,7 +86,6 @@ bool BAMCP::Update(uint ss, uint aa, uint observation, double reward)
     
     //Update posterior
     counts[(SA*ss)+(S*aa)+observation] += 1;
-    countsSum[ss*A+aa] += 1;
 
     //Q value update
     Q[ss*A+aa] += QlearningRate*(reward + Simulator.GetDiscount()*Q[observation*A+GreedyA[observation]->at(0)] - Q[ss*A+aa]);
