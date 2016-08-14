@@ -107,5 +107,5 @@ void Grid::DisplayObservation(const uint state, uint observation, std::ostream& 
 {}
 
 void Grid::DisplayAction(int action, std::ostream& ostr) const{
-        ostr << action << std::endl;
+    ostr << action << std::endl;
 }
