@@ -45,8 +45,6 @@ double MCTSEPS = 0.5;
 int main(int argc, char* argv[]) {
 	//Init-----------------------------------------------------------------------------
 	SIMULATOR* real = 0;
-	double* r = 0;
-	uint* counts = 0;
 	std::vector< std::vector<double> > Rhist(nTrials);
 	Rhist = std::vector< std::vector<double> >(nTrials);;
 
@@ -89,7 +87,6 @@ int main(int argc, char* argv[]) {
 
 		Rhist[i].reserve(nSteps);
 		xprmnt.Run(Rhist[i]);
-		samplerFact->reset();
 	}
 	timer.stopTimer();
 
@@ -102,6 +99,4 @@ int main(int argc, char* argv[]) {
 
 	//
 	delete real;
-	delete[] r;
-	delete[] counts;
 }

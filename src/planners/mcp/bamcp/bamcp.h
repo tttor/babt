@@ -9,8 +9,6 @@
  * Advances in Neural Information Processing Systems (NIPS) 2012
  *
  */
-
-
 #include "history.h"
 #include "envs/simulator.h"
 #include "planners/mcp/statistic.h"
@@ -62,7 +60,6 @@ public:
 private:
     uint* counts;
     double* countsSum;
-    //Cached values
     uint S,A,SA,SAS;
 
     PARAMS Params;
