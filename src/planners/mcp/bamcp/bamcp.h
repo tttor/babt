@@ -57,6 +57,8 @@ public:
 
     static void InitFastUCB(double exploration);
 
+    void GetCounts(uint* tCounts);
+
 private:
     uint* counts;
     uint S,A,SA,SAS;

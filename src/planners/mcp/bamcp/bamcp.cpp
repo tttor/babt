@@ -394,3 +394,9 @@ void BAMCP::DisplayPolicy(int depth, ostream& ostr) const
     ostr << "BAMCP Policy:" << endl;
     Root->DisplayPolicy(history, depth, ostr);
 }
+
+void BAMCP::GetCounts(uint* tCounts) {
+    for (uint i=0; i<SAS; ++i) {
+        *(tCounts+i) = counts[i];
+    }
+}

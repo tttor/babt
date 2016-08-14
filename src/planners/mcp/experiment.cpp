@@ -42,6 +42,12 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
     double discount = 1.0;
     bool terminal = false;
 
+    uint S = Real.GetNumObservations();
+    uint A = Real.GetNumActions();
+    uint* prevCounts = new uint[S*A*S];
+    uint* currCounts = new uint[S*A*S];
+    double* posteriorDists = new double[ExpParams.NumSteps];
+
     uint state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
         Real.DisplayState(state, cout);
@@ -74,8 +80,17 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
             break;
         }
 
+        //
         mcts.Update(state, action, observation, reward);
         state = observation;//For MDP:
+
+        if (t > 0) {
+            mcts.GetCounts(currCounts);
+
+            double dist = 0;//util3::btcry(currCounts,prevCounts);
+            posteriorDists[t] = dist;
+        }
+        mcts.GetCounts(prevCounts);
 
         if (timer.elapsed() > ExpParams.TimeOut)
         {
@@ -92,4 +107,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
          << Results.DiscountedReturn.GetMean() << ":"
          << undiscountedReturn << "," << Results.UndiscountedReturn.GetMean()
          << ") " << flush << endl;
+
+    delete[] currCounts;
+    delete[] prevCounts;
 }
