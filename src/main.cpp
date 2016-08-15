@@ -29,14 +29,6 @@ size_t A = 4;
 //Discount factor
 double gammadisc = 0.96;
 
-//BAMCP RB parameter
-int MCTSRB = -1;
-int nSims = 1000;
-
-//Default exploration constant
-double MCTSEC = 5;
-double MCTSEPS = 0.5;
-
 int main(int argc, char* argv[]) {
     //Init-----------------------------------------------------------------------------
     //Grid env
@@ -50,16 +42,16 @@ int main(int argc, char* argv[]) {
 
     //
     EXPERIMENT::PARAMS expParams;
-    expParams.NumSteps = 5;//Number of steps to execute
+    expParams.NumSteps = 100;//Number of steps to execute
     expParams.AutoExploration = false;
     expParams.TimeOut = 32000;
     expParams.OutDirpath = "/home/tor/abt/xprmt/xprmt-babt";
 
     BAMCP::PARAMS searchParams;
-    searchParams.NumSimulations = nSims;
-    searchParams.ExplorationConstant = MCTSEC;
-    searchParams.RB = MCTSRB;
-    searchParams.eps = MCTSEPS;
+    searchParams.NumSimulations = 1000;
+    searchParams.ExplorationConstant = 5;
+    searchParams.RB = -1;
+    searchParams.eps = 0.5;
     searchParams.MaxDepth = real->GetHorizon(expParams.Accuracy, 
                                              expParams.UndiscountedHorizon);
 
