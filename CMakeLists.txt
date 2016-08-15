@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -mfpmath=sse -msse -msse2 -msse3 -mtune=native -ftree-vectorize -ffast-math -Wall")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -mfpmath=sse -msse -msse2 -msse3 -mtune=native -ftree-vectorize -ffast-math -Wall")
 
 set(CMAKE_SOURCE_DIR "src/")
 SET(BASEPATH "${CMAKE_SOURCE_DIR}")
@@ -29,10 +29,13 @@ SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/opt/local/include/")
 FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 MESSAGE("${Boost_INCLUDE_DIRS}")
+
 ADD_EXECUTABLE(brl src/main.cpp ${brl_src})
+
+set_property(TARGET brl PROPERTY CXX_STANDARD 11)
+set_property(TARGET brl PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_link_libraries(brl ${Boost_LIBRARIES}
 	${Boost_FILESYSTEM_LIBRARY}
 	${Boost_SYSTEM_LIBRARY}
 ) 
-

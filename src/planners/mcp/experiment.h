@@ -44,25 +44,23 @@ public:
         double Accuracy;
         int UndiscountedHorizon;
         bool AutoExploration;
+        std::string OutDirpath;
     };
 
     EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, 
-        const std::string& outputFile, 
-        EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams,
-				 SamplerFactory& samplerFactory);
+               EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams,
+               SamplerFactory& samplerFactory);
 
     void Run(std::vector<double>& Rhist);
-		void RunBandit(std::vector<uint>& Rhist, std::vector<uint>& optArm, uint bestArm);
+    void RunBandit(std::vector<uint>& Rhist, std::vector<uint>& optArm, uint bestArm);
 
 private:
-
     const SIMULATOR& Real;
     const SIMULATOR& Simulator;
     EXPERIMENT::PARAMS& ExpParams;
     BAMCP::PARAMS& SearchParams;
     RESULTS Results;
-		SamplerFactory& samplerFact;
-    std::ofstream OutputFile;
+    SamplerFactory& samplerFact;
 };
 
 //----------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 #include "experiment.h"
 #include "boost/timer.hpp"
+#include <string>     // std::string, std::to_string
 
 using namespace std;
 
@@ -10,19 +11,19 @@ EXPERIMENT::PARAMS::PARAMS()
     TimeOut(15000),
     Accuracy(0.01),
     UndiscountedHorizon(1000),
-    AutoExploration(true)
+    AutoExploration(true),
+    OutDirpath(string())
 {
 }
 
-EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const string& outputFile,
+EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, 
                        EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, 
                        SamplerFactory& _samplerFact)
 :   Real(real),
     Simulator(simulator),
     ExpParams(expParams),
     SearchParams(searchParams),
-    samplerFact(_samplerFact),
-    OutputFile(outputFile.c_str())
+    samplerFact(_samplerFact)
 {
     if (ExpParams.AutoExploration)
     {
@@ -56,6 +57,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
             counts.at(i).at(j).resize(S);
             currPosteriors.at(i).at(j).resize(S);
             prevPosteriors.at(i).at(j).resize(S);
+            for (uint k=0; k<S; ++k) prevPosteriors[i][j][k] = samplerFact.getAlphaMean();
         }
     }
     
@@ -99,12 +101,17 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
         state = observation;//For MDP:
 
         mcts.GetCounts(&counts);
-        utils::convertCountsToPosteriors(counts,&currPosteriors);
+        for (uint s=0; s<S; ++s) {
+            string filename(ExpParams.OutDirpath+"/counts_at_"+to_string(s));
+            utils::dump(counts.at(s),filename);
+        }
+
         if (t>0) {
+            utils::updatePosteriors(counts,prevPosteriors,&currPosteriors);
             utils::getPosteriorDistances(currPosteriors,prevPosteriors,
                                          &(posteriorDistances.at(t)));
+            prevPosteriors = currPosteriors;
         }
-        prevPosteriors = currPosteriors;
 
         if (timer.elapsed() > ExpParams.TimeOut)
         {
@@ -121,4 +128,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
          << Results.DiscountedReturn.GetMean() << ":"
          << undiscountedReturn << "," << Results.UndiscountedReturn.GetMean()
          << ") " << flush << endl;
+
+    string filename(ExpParams.OutDirpath+"/posteriorDistances.csv");
+    utils::dump(posteriorDistances,filename);
 }

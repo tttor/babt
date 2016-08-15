@@ -21,7 +21,7 @@ namespace utils{
 extern RNG rng;
 
 typedef 
-std::vector< std::vector< std::vector<uint> > > 
+std::vector< std::vector< std::vector<double> > > // Yes, casted to double
 Counts;
 
 typedef 
@@ -31,6 +31,7 @@ Posteriors;
 void printA(double*v , size_t s);
 
 void normalize(double* v, size_t s);
+void normalize(std::vector<double>* v);
 
 double** new2DArray(size_t s1, size_t s2);
 void free2DArray(double **a, size_t s1);
@@ -49,7 +50,7 @@ double hellinger(std::vector<double>& p, const std::vector<double>& q);
 
 void getPosteriorDistances(const Posteriors& currP, const Posteriors& prevP, 
                            std::vector<double>* distances);
-void convertCountsToPosteriors(const Counts& counts, Posteriors* posteriors);
+void updatePosteriors(const Counts& counts, const Posteriors& prevP, Posteriors* posteriors);
 double mean(const std::vector<double>& v);
 
 void setSeed(ulong _x);

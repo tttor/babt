@@ -398,7 +398,7 @@ void BAMCP::GetCounts(utils::Counts* pCounts) {
     for (uint s=0; s<S; ++s) {
         for (uint a=0; a<A; ++a) {
             for (uint ss=0; ss<S; ++ss) {
-                uint c = counts[(SA*s)+(S*a)+ss];
+                double c = counts[(SA*s)+(S*a)+ss];
                 pCounts->at(s).at(a).at(ss) = c;
             }
         }
