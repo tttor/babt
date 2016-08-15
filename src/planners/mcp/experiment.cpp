@@ -57,6 +57,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
             counts.at(i).at(j).resize(S);
             currPosteriors.at(i).at(j).resize(S);
             prevPosteriors.at(i).at(j).resize(S);
+            for (uint k=0; k<S; ++k) prevPosteriors[i][j][k] = samplerFact.getAlphaMean();
         }
     }
     
@@ -105,12 +106,12 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
             utils::dump(counts.at(s),filename);
         }
 
-        utils::convertCountsToPosteriors(counts,&currPosteriors);
         if (t>0) {
+            utils::updatePosteriors(counts,prevPosteriors,&currPosteriors);
             utils::getPosteriorDistances(currPosteriors,prevPosteriors,
                                          &(posteriorDistances.at(t)));
+            prevPosteriors = currPosteriors;
         }
-        prevPosteriors = currPosteriors;
 
         if (timer.elapsed() > ExpParams.TimeOut)
         {

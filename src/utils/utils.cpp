@@ -18,6 +18,11 @@ void utils::normalize(double* v, size_t s){
     for(i=0;i<s;++i)
         v[i]=v[i]/sum;
 }
+void utils::normalize(std::vector<double>* v) {
+    double sum = 0.0;
+    for (uint i=0; i<v->size(); ++i) sum += v->at(i);
+    for (uint i=0; i<v->size(); ++i) v->at(i) = (v->at(i)/sum);
+}
 double** utils::new2DArray(size_t s1, size_t s2){
     double** a = new double*[s1];
     for(size_t i=0;i<s1;++i)
@@ -383,7 +388,7 @@ void utils::getPosteriorDistances(const utils::Posteriors& currP, const utils::P
     }
 }
 
-void utils::convertCountsToPosteriors(const utils::Counts& counts, utils::Posteriors* posteriors) {
+void utils::updatePosteriors(const utils::Counts& counts, const Posteriors& prevP, utils::Posteriors* posteriors) {
     for (uint s=0; s<counts.size(); ++s) {
         for (uint a=0; a<counts.at(s).size(); ++a) {
             uint sum = 0;
@@ -392,10 +397,18 @@ void utils::convertCountsToPosteriors(const utils::Counts& counts, utils::Poster
             }
 
             for (uint ss=0; ss<counts.at(s).at(a).size(); ++ss) {
-                uint c = counts.at(s).at(a).at(ss);
-                double p = (double)c/sum;// TODO handle if sum=0
+                double p = prevP.at(s).at(a).at(ss);
+                if (sum!=0) {
+                    uint c = counts.at(s).at(a).at(ss);
+                    p += (double)c/sum;
+                }
                 posteriors->at(s).at(a).at(ss) = p;
             }
+        }
+    }
+    for (uint s=0;s<posteriors->size(); ++s) {
+        for (uint a=0; a<posteriors->at(s).size(); ++a) {
+            normalize( &(posteriors->at(s).at(a)) );
         }
     }
 }
