@@ -393,7 +393,7 @@ void utils::convertCountsToPosteriors(const utils::Counts& counts, utils::Poster
 
             for (uint ss=0; ss<counts.at(s).at(a).size(); ++ss) {
                 uint c = counts.at(s).at(a).at(ss);
-                double p = (double)c/sum;
+                double p = (double)c/sum;// TODO handle if sum=0
                 posteriors->at(s).at(a).at(ss) = p;
             }
         }

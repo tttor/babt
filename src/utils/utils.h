@@ -21,7 +21,7 @@ namespace utils{
 extern RNG rng;
 
 typedef 
-std::vector< std::vector< std::vector<uint> > > 
+std::vector< std::vector< std::vector<double> > > // Yes, casted to double
 Counts;
 
 typedef 

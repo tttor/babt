@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     //
     EXPERIMENT::PARAMS expParams;
-    expParams.NumSteps = 10;//Number of steps to execute
+    expParams.NumSteps = 5;//Number of steps to execute
     expParams.AutoExploration = false;
     expParams.TimeOut = 32000;
     expParams.OutDirpath = "/home/tor/abt/xprmt/xprmt-babt";

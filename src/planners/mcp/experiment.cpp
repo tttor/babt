@@ -1,5 +1,6 @@
 #include "experiment.h"
 #include "boost/timer.hpp"
+#include <string>     // std::string, std::to_string
 
 using namespace std;
 
@@ -99,6 +100,11 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
         state = observation;//For MDP:
 
         mcts.GetCounts(&counts);
+        for (uint s=0; s<S; ++s) {
+            string filename(ExpParams.OutDirpath+"/counts_at_"+to_string(s));
+            utils::dump(counts.at(s),filename);
+        }
+
         utils::convertCountsToPosteriors(counts,&currPosteriors);
         if (t>0) {
             utils::getPosteriorDistances(currPosteriors,prevPosteriors,
@@ -121,4 +127,7 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
          << Results.DiscountedReturn.GetMean() << ":"
          << undiscountedReturn << "," << Results.UndiscountedReturn.GetMean()
          << ") " << flush << endl;
+
+    string filename(ExpParams.OutDirpath+"/posteriorDistances.csv");
+    utils::dump(posteriorDistances,filename);
 }
