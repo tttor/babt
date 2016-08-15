@@ -10,19 +10,19 @@ EXPERIMENT::PARAMS::PARAMS()
     TimeOut(15000),
     Accuracy(0.01),
     UndiscountedHorizon(1000),
-    AutoExploration(true)
+    AutoExploration(true),
+    OutDirpath(string())
 {
 }
 
-EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const string& outputFile,
+EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, 
                        EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, 
                        SamplerFactory& _samplerFact)
 :   Real(real),
     Simulator(simulator),
     ExpParams(expParams),
     SearchParams(searchParams),
-    samplerFact(_samplerFact),
-    OutputFile(outputFile.c_str())
+    samplerFact(_samplerFact)
 {
     if (ExpParams.AutoExploration)
     {
