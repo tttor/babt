@@ -15,7 +15,8 @@ EXPERIMENT::PARAMS::PARAMS()
 }
 
 EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const string& outputFile,
-                       EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, SamplerFactory& _samplerFact)
+                       EXPERIMENT::PARAMS& expParams, BAMCP::PARAMS& searchParams, 
+                       SamplerFactory& _samplerFact)
 :   Real(real),
     Simulator(simulator),
     ExpParams(expParams),
@@ -31,7 +32,6 @@ EXPERIMENT::EXPERIMENT(const SIMULATOR& real, const SIMULATOR& simulator, const 
     BAMCP::InitFastUCB(SearchParams.ExplorationConstant);
 }
 
-
 void EXPERIMENT::Run(std::vector<double>& Rhist)
 {
     boost::timer timer;
@@ -41,6 +41,26 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
     double discountedReturn = 0.0;
     double discount = 1.0;
     bool terminal = false;
+
+    uint S = Real.GetNumObservations();
+    uint A = Real.GetNumActions();
+
+    utils::Counts counts(S);// transition counts, size=SAS
+    utils::Posteriors currPosteriors(S);// posterior of transition prob.
+    utils::Posteriors prevPosteriors(S);// posterior of transition prob.
+    for (uint i=0; i<S; ++i) {
+        counts.at(i).resize(A);
+        currPosteriors.at(i).resize(A);
+        prevPosteriors.at(i).resize(A);
+        for (uint j=0; j<A; ++j) {
+            counts.at(i).at(j).resize(S);
+            currPosteriors.at(i).at(j).resize(S);
+            prevPosteriors.at(i).at(j).resize(S);
+        }
+    }
+    
+    std::vector< std::vector<double> > posteriorDistances(ExpParams.NumSteps);
+    for(uint i=0; i<ExpParams.NumSteps; ++i) posteriorDistances.at(i).resize(S);
 
     uint state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
@@ -74,8 +94,17 @@ void EXPERIMENT::Run(std::vector<double>& Rhist)
             break;
         }
 
+        //
         mcts.Update(state, action, observation, reward);
         state = observation;//For MDP:
+
+        mcts.GetCounts(&counts);
+        utils::convertCountsToPosteriors(counts,&currPosteriors);
+        if (t>0) {
+            utils::getPosteriorDistances(currPosteriors,prevPosteriors,
+                                         &(posteriorDistances.at(t)));
+        }
+        prevPosteriors = currPosteriors;
 
         if (timer.elapsed() > ExpParams.TimeOut)
         {

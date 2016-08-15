@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS2_H
+#define UTILS2_H
 
 #include <vector>
 #include <stdlib.h>
@@ -70,4 +70,4 @@ void UnitTest();
 
 }
 
-#endif // UTILS_H
+#endif // UTILS2_H

@@ -1,4 +1,6 @@
 #pragma once
+#ifndef UTILS_H
+#define UTILS_H
 
 #include "rng.h"
 #include <boost/numeric/ublas/vector.hpp>
@@ -12,11 +14,19 @@ using namespace boost::numeric::ublas;
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 namespace fs = boost::filesystem;
-
 typedef unsigned int uint;
+
 namespace utils{
 
 extern RNG rng;
+
+typedef 
+std::vector< std::vector< std::vector<uint> > > 
+Counts;
+
+typedef 
+std::vector< std::vector< std::vector<double> > > 
+Posteriors;
 
 void printA(double*v , size_t s);
 
@@ -35,6 +45,12 @@ double sqnorm_2(double* v1, double* v2, size_t s);
 double TV(double* v1, double* v2, size_t s);
 double TV(const vector<double>& p, const vector<double>& q);
 double KLdiv(const vector<double>& p, const vector<double>& q);
+double hellinger(std::vector<double>& p, const std::vector<double>& q);
+
+void getPosteriorDistances(const Posteriors& currP, const Posteriors& prevP, 
+                           std::vector<double>* distances);
+void convertCountsToPosteriors(const Counts& counts, Posteriors* posteriors);
+double mean(const std::vector<double>& v);
 
 void setSeed(ulong _x);
 
@@ -46,46 +62,46 @@ vector<double> sampleDirichlet(const vector<double> &params);
 
 template <class T>
 void append(T x, std::string& filename){
-	fs::path p(filename);
-	fs::ofstream ofs(p, std::ios::app);
-	ofs << x << std::endl;
-	ofs.close();
+    fs::path p(filename);
+    fs::ofstream ofs(p, std::ios::app);
+    ofs << x << std::endl;
+    ofs.close();
 }
 
 //Overwrite file with elements of std::vector (print as column)
 template <class T>
 void dump(const std::vector<T> &v, std::string& filename){
-	fs::path p(filename);
-	fs::ofstream ofs(p, std::ios::out);
-	if(ofs.is_open()){
-		BOOST_FOREACH(T d, v){
-			ofs << d << std::endl;
-		}
-		ofs.close();
-	}
-	else
-		std::cout << "Error: couldn't open file for writing: " << filename << std::endl;
+    fs::path p(filename);
+    fs::ofstream ofs(p, std::ios::out);
+    if(ofs.is_open()){
+        BOOST_FOREACH(T d, v){
+            ofs << d << std::endl;
+        }
+        ofs.close();
+    }
+    else
+        std::cout << "Error: couldn't open file for writing: " << filename << std::endl;
 }
 
 //print each std::vector on a *column*
 template <class T>
 void dumpc(const std::vector<std::vector<T> > &vv, std::string& filename, uint N){
   
-	fs::path p(filename);
-	fs::ofstream ofs(p, std::ios::out);
-	if(ofs.is_open())
-	{
-		for(size_t row = 0; row < N; ++row){
-			for(size_t col = 0; col < vv.size(); ++col){
-				ofs << vv[col][row] << " ";
-			}
-			ofs << std::endl;
-		}
-		ofs.close();
-	}
-	else{
-		std::cout << "Error: couldn't open file for writing: " << filename << std::endl;
-	}
+    fs::path p(filename);
+    fs::ofstream ofs(p, std::ios::out);
+    if(ofs.is_open())
+    {
+        for(size_t row = 0; row < N; ++row){
+            for(size_t col = 0; col < vv.size(); ++col){
+                ofs << vv[col][row] << " ";
+            }
+            ofs << std::endl;
+        }
+        ofs.close();
+    }
+    else{
+        std::cout << "Error: couldn't open file for writing: " << filename << std::endl;
+    }
 };
 
 void dump(const vector<double> &v, std::string& filename);
@@ -100,3 +116,5 @@ int StringToInt(const std::string String);
 int getSvnRevision();
 
 }
+
+#endif // UTILS_H

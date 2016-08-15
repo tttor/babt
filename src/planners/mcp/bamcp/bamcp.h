@@ -12,6 +12,7 @@
 #include "history.h"
 #include "envs/simulator.h"
 #include "planners/mcp/statistic.h"
+#include "utils/utils.h"
 
 #include <fstream>
 
@@ -57,9 +58,10 @@ public:
 
     static void InitFastUCB(double exploration);
 
+    void GetCounts(utils::Counts* pCounts);
+
 private:
     uint* counts;
-    double* countsSum;
     uint S,A,SA,SAS;
 
     PARAMS Params;
